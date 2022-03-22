@@ -1,5 +1,8 @@
 #include "matrix.h"
 
+std::random_device rd;
+std::mt19937 rng = std::mt19937(rd());
+
 void printmatrix(const matrix_t& matrix){
     for (int i = 0; i < matrix.rows; ++i) {
         for (int j = 0; j < matrix.cols; ++j)
@@ -105,7 +108,7 @@ matrix_t oproduct(const matrix_t& left, const matrix_t& right) {
 
     for(int i = 0; i < left.rows; i++) {
         for (int j = 0; j < right.rows; ++j)
-            values[i * left.rows + j] = left.values[i] * right.values[j];
+            values[i * right.rows + j] = left.values[i] * right.values[j];
     }
 
     return {values, left.rows, right.rows};

@@ -12,9 +12,6 @@ struct matrix_t {
     size_t cols;
 };
 
-std::random_device rd;
-std::mt19937 rng = std::mt19937(rd());
-
 void printmatrix(const matrix_t& matrix);
 
 matrix_t sum(const matrix_t& left, const matrix_t& right);
