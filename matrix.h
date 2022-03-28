@@ -10,6 +10,10 @@ struct matrix_t {
     double* values;
     size_t rows;
     size_t cols;
+
+    double& operator[](size_t i) const {
+        return values[i];
+    }
 };
 
 void printmatrix(const matrix_t& matrix);
@@ -30,9 +34,24 @@ matrix_t sproduct(double multiplier, const matrix_t& matrix);
 int sproductip(double multiplier, const matrix_t& matrix);
 matrix_t oproduct(const matrix_t& left, const matrix_t& right);
 double fiproduct(const matrix_t& left, const matrix_t& right);
+matrix_t ewproduct(const matrix_t& left, const matrix_t& right);
+int ewproductip(const matrix_t& left, const matrix_t& right);
+
+
+matrix_t transpose(const matrix_t& matrix);
+int transposeip(matrix_t& matrix);
+
+
 
 matrix_t zeros(size_t rows, size_t cols);
 matrix_t ones(size_t rows, size_t cols);
 matrix_t random(size_t rows, size_t cols, double low, double high);
+matrix_t copy_matrix(const matrix_t& matrix);
+
+void pass(matrix_t& matrix);
+void relu(matrix_t& matrix);
+void reluderiv(matrix_t& matrix);
+void sigmoid(matrix_t& matrix);
+void sigmoidderiv(matrix_t& matrix);
 
 #endif
