@@ -55,6 +55,7 @@ network_t load_layers(const std::string &filename) {
         layers[i].bias.values = (double *) malloc(layer.bias.rows * sizeof(double));
         file.read((char *) layers[i].weights.values, layer.weights.rows * layer.weights.cols * sizeof(double));
         file.read((char *) layers[i].bias.values, layer.bias.rows * sizeof(double));
+        file.read((char*) &layers[i].activation, sizeof(Activation));
     }
 
     file.close();
@@ -71,6 +72,7 @@ void save_layers(network_t& network, const std::string &filename) {
         file.write((char *) &w.weights.cols, sizeof(int));
         file.write((char *) w.weights.values, w.weights.cols * w.weights.rows * sizeof(double));
         file.write((char *) w.bias.values, w.bias.rows * sizeof(double));
+        file.write((char *) &w.activation, sizeof(Activation));
     }
     file.close();
 }

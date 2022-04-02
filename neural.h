@@ -34,7 +34,7 @@ struct network_t {
 void destroy_network(network_t& network);
 
 matrix_t predict(network_t& network, const matrix_t& input);
-void add_layer(network_t& network, size_t rows, size_t cols=0, double min=0, double max=1, enum Activation activation=PASS);
+void add_layer(network_t& network, size_t rows, size_t cols=0, double min=-0.1, double max=0.1, enum Activation activation=PASS);
 
 network_t load_layers(const std::string& filename);
 void save_layers(network_t& network, const std::string& filename);

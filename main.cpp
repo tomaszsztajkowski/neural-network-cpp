@@ -8,50 +8,29 @@ void zad3();
 
 void zad4();
 
-int main() {
-    network_t network {{}, 0.01};
-    add_layer(network, 40, 784, -0.1, 0.1, RELU);
-    add_layer(network, 10, 40, -0.1, 0.1);
+char *read_numbers(std::string filename, int offset, const long bytes) {
+    char *output = (char *) malloc(bytes);
+    std::fstream file(filename, std::ios::in | std::ios::binary);
+    file.seekg(offset, std::fstream::beg);
+    file.read(output, bytes);
+    file.close();
+    return output;
+}
 
-    size_t train_count = 60000;
-    size_t image_size = 28 * 28;
-    size_t load_count = 100;
-    size_t epochs = 1;
-
-
-    char labl[load_count] = {0};
-    double labels[load_count] = {0};
-
-    char imgs[load_count * image_size] = {0};
-    double images[load_count][image_size] = {0};
-
-    for (int e = 0; e < epochs; ++e) {
-        std::fstream file("train-labels.idx1-ubyte", std::ios::in | std::ios::binary);
-        file.read(labl, 8);
-
-        std::fstream file2("train-images.idx1-ubyte", std::ios::in | std::ios::binary);
-        file2.read(imgs, 16);
-
-        for (int l = 0; l < train_count / load_count; ++l) {
-            std::cout << l << '\n';
-            file.read(labl, load_count);
-            file2.read(imgs, load_count * image_size);
-
-            for (int i = 0; i < train_count; ++i) {
-                labels[i] = labl[i];
-                for (int j = 0; j < image_size; ++j) {
-                    images[i][j] = (double)imgs[i*image_size + j] / 255.0;
-                }
-                learn(network, {images[i], image_size, 1}, {labels + i, 1, 1});
-            }
+void show_number(const char *buffer, size_t n) {
+    for (int i = 0; i < 28; ++i) {
+        for (int j = 0; j < 28; ++j) {
+            if (*(buffer + n * 28 * 28 + i * 28 + j) != 0)
+                std::cout << '0' << ' ';
+            else
+                std::cout << "  ";
         }
-        file.close();
-        file2.close();
+        std::cout << '\n';
     }
+}
 
 
-
-
+int main() {
 
     return 0;
 }
@@ -125,7 +104,7 @@ void zad2() {
 
     for (int j = 0; j < 51; ++j) {
         for (int i = 0; i < 4; ++i) {
-            if(j == 0 || j == 49){
+            if (j == 0 || j == 49) {
                 matrix_t result = predict(network, {ivalues[i], 3, 1});
                 printmatrix(result);
                 std::cout << '\n';
@@ -139,6 +118,124 @@ void zad2() {
     free(hidden_layer.bias.values);
 }
 
-void zad3();
+void zad3() {
+    network_t network{{}, 0.01};
+//    network = load_layers("network_numbers.bin");
+    add_layer(network, 40, 784, -0.1, 0.1, RELU);
+    add_layer(network, 10, 40, -0.1, 0.1);
 
-void zad4();
+    const long train_count = 60 * 1000;
+    const long test_count = 10 * 1000;
+    const long image_size = 28 * 28;
+    size_t epochs = 5;
+
+    char *labels = read_numbers("train-labels.idx1-ubyte", 8, train_count);
+    char *images = read_numbers("train-images.idx3-ubyte", 16, train_count * image_size);
+
+    char *labels_test = read_numbers("t10k-labels.idx1-ubyte", 8, test_count);
+    char *images_test = read_numbers("t10k-images.idx3-ubyte", 16, test_count * image_size);
+
+    for (int e = 0; e < epochs; ++e) {
+        for (int i = 0; i < train_count; ++i) {
+            double values[image_size];
+            for (int j = 0; j < image_size; ++j)
+                values[j] = (double) (uint8_t) images[i * image_size + j] / 255;
+            double lvalues[10] = {0};
+            lvalues[labels[i]] = 1;
+            matrix_t input = {values, image_size, 1};
+            matrix_t label = {lvalues, 10, 1};
+
+            learn(network, input, label);
+        }
+        std::cout << e << '\n';
+        int correct = 0;
+        for (int i = 0; i < test_count; ++i) {
+            double values[image_size];
+            for (int j = 0; j < image_size; ++j)
+                values[j] = (double) (uint8_t) images_test[i * image_size + j] / 255;
+            matrix_t input = {values, image_size, 1};
+            matrix_t prediction = predict(network, input);
+
+            int pred = 0;
+            double max = prediction[0];
+            for (int j = 1; j < 10; ++j) {
+                if (prediction[j] > max) {
+                    max = prediction[j];
+                    pred = j;
+                }
+            }
+            if (pred == labels_test[i])
+                correct++;
+        }
+
+        std::cout << correct << '/' << test_count << '\n';
+        std::cout << (double) correct / (double) test_count << '\n';
+        save_layers(network, "network_numbers.bin");
+    }
+
+    free(images);
+    free(labels);
+    free(images_test);
+    free(labels_test);
+    destroy_network(network);
+}
+
+void zad4() {
+    network_t network{{}, 0.01};
+    add_layer(network, 6, 3, 0, 1, RELU);
+    add_layer(network, 4, 6, 0, 1);
+
+    double train_input[109 * 3];
+    int train_expected[109];
+
+    double test_input[130 * 3];
+    int test_expected[130];
+
+    std::fstream train_file("train-colors.txt", std::ios::in);
+    for (int i = 0; i < 109; ++i)
+        train_file >> train_input[i * 3] >> train_input[i * 3 + 1] >> train_input[i * 3 + 2] >> train_expected[i];
+    train_file.close();
+
+    std::fstream test_file("test-colors.txt", std::ios::in);
+    for (int i = 0; i < 130; ++i)
+        test_file >> test_input[i * 3] >> test_input[i * 3 + 1] >> test_input[i * 3 + 2] >> test_expected[i];
+    test_file.close();
+
+    for (int e = 0; e < 30; ++e) {
+        for (int i = 0; i < 109; ++i) {
+            double values[3] = {train_input[i * 3], train_input[i * 3 + 1], train_input[i * 3 + 2]};
+            matrix_t input = {values, 3, 1};
+            double evalues[4] = {0};
+            evalues[train_expected[i] - 1] = 1;
+            matrix_t expected = {evalues, 4, 1};
+
+            learn(network, input, expected);
+        }
+
+        int correct = 0;
+        for (int i = 0; i < 130; ++i) {
+            double values[3] = {test_input[i * 3], test_input[i * 3 + 1], test_input[i * 3 + 2]};
+            matrix_t input = {values, 3, 1};
+            matrix_t prediction = predict(network, input);
+
+            int pred = 0;
+            double max = prediction[0];
+            for (int j = 1; j < 4; ++j) {
+                if(prediction[j] > max) {
+                    max = prediction[j];
+                    pred = j;
+                }
+            }
+
+            if (pred == test_expected[i] - 1)
+                correct++;
+
+            free(prediction.values);
+        }
+        std::cout << e << '\n';
+        std::cout << correct << "/130\n";
+        std::cout << correct / 130.0 << '\n';
+    }
+
+    destroy_network(network);
+}
