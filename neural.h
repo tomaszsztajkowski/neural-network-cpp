@@ -12,7 +12,7 @@
 #include <cmath>
 #include "matrix.h"
 
-enum Activation {PASS, RELU, SIGMOID};
+enum Activation {PASS, RELU, SIGMOID, TANH, SOFTMAX};
 
 typedef struct layer_t layer_t;
 struct layer_t {
@@ -39,6 +39,7 @@ void add_layer(network_t& network, size_t rows, size_t cols=0, double min=-0.1, 
 network_t load_layers(const std::string& filename);
 void save_layers(network_t& network, const std::string& filename);
 
-int learn(network_t& network, const matrix_t& input, const matrix_t& expected);
+int fit(network_t& network, const matrix_t& input, const matrix_t& expected);
+int fit_dropout(network_t& network, const matrix_t& input, const matrix_t& expected, double dropout=0.5);
 
 #endif

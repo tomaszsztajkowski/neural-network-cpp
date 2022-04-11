@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <cstring>
+#include <cmath>
+
 
 typedef struct matrix_t matrix_t;
 struct matrix_t {
@@ -46,6 +49,7 @@ int transposeip(matrix_t& matrix);
 matrix_t zeros(size_t rows, size_t cols);
 matrix_t ones(size_t rows, size_t cols);
 matrix_t random(size_t rows, size_t cols, double low, double high);
+matrix_t random_ones(size_t rows, double ratio);
 matrix_t copy_matrix(const matrix_t& matrix);
 
 void pass(matrix_t& matrix);
@@ -53,5 +57,10 @@ void relu(matrix_t& matrix);
 void reluderiv(matrix_t& matrix);
 void sigmoid(matrix_t& matrix);
 void sigmoidderiv(matrix_t& matrix);
+void tanh(matrix_t &matrix);
+void tanhderiv(matrix_t &matrix);
+void softmax(matrix_t &matrix);
+
+long long choose(int n, int r);
 
 #endif

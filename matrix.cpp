@@ -1,4 +1,3 @@
-#include <cstring>
 #include "matrix.h"
 
 std::random_device rd;
@@ -110,14 +109,12 @@ int sproductip(double multiplier, const matrix_t &matrix) {
 }
 
 matrix_t oproduct(const matrix_t &left, const matrix_t &right) {
-    auto *values = (double *) malloc(left.rows * right.rows * sizeof(double));
+    matrix_t transposed = transpose(right);
 
-    for (int i = 0; i < left.rows; i++) {
-        for (int j = 0; j < right.rows; ++j)
-            values[i * right.rows + j] = left[i] * right[j];
-    }
+    matrix_t output = product(left, transposed);
+    free(transposed.values);
 
-    return {values, left.rows, right.rows};
+    return output;
 }
 
 double fiproduct(const matrix_t &left, const matrix_t &right) {
@@ -187,6 +184,22 @@ matrix_t random(size_t rows, size_t cols, double low, double high) {
     return {values, rows, cols};
 }
 
+matrix_t random_ones(size_t rows, double ratio) {
+    std::uniform_int_distribution<int> dist = std::uniform_int_distribution<int>(0, choose(rows, rows * ratio) - 1);
+    auto *values = (double *) malloc(rows * sizeof(double));
+    int ordinal = dist(rng);
+    size_t ones = rows * ratio;
+    for (size_t i = rows; ones > 0; --i) {
+        size_t nCk = choose(i, ones);
+        if(ordinal >= nCk) {
+            ordinal -= nCk;
+            values[i] = 1;
+            --ones;
+        }
+    }
+    return {values, rows, 1};
+}
+
 matrix_t copy_matrix(const matrix_t& matrix) {
     auto* values = (double*)malloc(matrix.rows * matrix.cols * sizeof(double));
     memcpy(values, matrix.values, matrix.rows * matrix.cols * sizeof(double ));
@@ -212,5 +225,37 @@ void sigmoid(matrix_t &matrix) {
 
 void sigmoidderiv(matrix_t &matrix) {
     for (int i = 0; i < matrix.rows * matrix.cols; ++i)
-        matrix[i] = matrix[i] * exp(1 - matrix[i]);
+        matrix[i] = matrix[i] * (1 - matrix[i]);
+}
+
+void tanh(matrix_t &matrix) {
+    for (int i = 0; i < matrix.rows * matrix.cols; ++i)
+        matrix[i] = (exp(matrix[i]) - exp(-matrix[i])) / (exp(matrix[i]) + exp(-matrix[i]));
+}
+
+void tanhderiv(matrix_t &matrix) {
+    for (int i = 0; i < matrix.rows * matrix.cols; ++i)
+        matrix[i] = 1 - matrix[i] * matrix[i];
+}
+
+void softmax(matrix_t &matrix) {
+    double sum = 0;
+    for (int i = 0; i < matrix.rows * matrix.cols; ++i)
+        sum += exp(matrix[i]);
+    for (int i = 0; i < matrix.rows * matrix.cols; ++i)
+        matrix[i] = exp(matrix[i]) / sum;
+}
+
+long long choose(int n, int r) {
+    if(r > n) return 0;
+    if(r > n - r) r = n - r; // because C(n, r) == C(n, n - r)
+    long long ans = 1;
+    int i;
+
+    for(i = 1; i <= r; i++) {
+        ans *= n - r + i;
+        ans /= i;
+    }
+
+    return ans;
 }

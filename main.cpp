@@ -17,20 +17,26 @@ char *read_numbers(std::string filename, int offset, const long bytes) {
     return output;
 }
 
-void show_number(const char *buffer, size_t n) {
+void show_number(const matrix_t images, const matrix_t labels,  size_t n) {
     for (int i = 0; i < 28; ++i) {
         for (int j = 0; j < 28; ++j) {
-            if (*(buffer + n * 28 * 28 + i * 28 + j) != 0)
+            if (images[images.cols * (i * 28 + j) + n] != 0)
                 std::cout << '0' << ' ';
             else
                 std::cout << "  ";
         }
         std::cout << '\n';
     }
+
+    for (int i = 0; i < 10; ++i) {
+        std::cout << labels[labels.cols * i + n] << '\n';
+    }
 }
 
 
+
 int main() {
+    zad3();
 
     return 0;
 }
@@ -111,7 +117,7 @@ void zad2() {
                 free(result.values);
 
             }
-            learn(network, {ivalues[i], 3, 1}, {expectedvalues[i], 3, 1});
+            fit(network, {ivalues[i], 3, 1}, {expectedvalues[i], 3, 1});
         }
     }
     free(out_layer.bias.values);
@@ -123,6 +129,8 @@ void zad3() {
 //    network = load_layers("network_numbers.bin");
     add_layer(network, 40, 784, -0.1, 0.1, RELU);
     add_layer(network, 10, 40, -0.1, 0.1);
+
+//    matrix_t hidden_copy = copy_matrix(network.layers[0].weights);
 
     const long train_count = 60 * 1000;
     const long test_count = 10 * 1000;
@@ -145,7 +153,7 @@ void zad3() {
             matrix_t input = {values, image_size, 1};
             matrix_t label = {lvalues, 10, 1};
 
-            learn(network, input, label);
+            fit_dropout(network, input, label);
         }
         std::cout << e << '\n';
         int correct = 0;
@@ -168,10 +176,16 @@ void zad3() {
                 correct++;
         }
 
+//        printmatrix({network.layers[0].weights.values, 40, 2});
+//        std::cout << '\n';
+//        printmatrix({hidden_copy.values, 40, 2});
+
         std::cout << correct << '/' << test_count << '\n';
         std::cout << (double) correct / (double) test_count << '\n';
         save_layers(network, "network_numbers.bin");
     }
+
+
 
     free(images);
     free(labels);
@@ -209,7 +223,7 @@ void zad4() {
             evalues[train_expected[i] - 1] = 1;
             matrix_t expected = {evalues, 4, 1};
 
-            learn(network, input, expected);
+            fit(network, input, expected);
         }
 
         int correct = 0;
