@@ -200,6 +200,15 @@ matrix_t random_ones(size_t rows, double ratio) {
     return {values, rows, 1};
 }
 
+matrix_t random_ones_appr(size_t rows, double ratio) {
+    std::uniform_real_distribution<double> dist = std::uniform_real_distribution<double>(0, 1);
+    auto *values = (double *) malloc(rows * sizeof(double));
+    for (int i = 0; i < rows; ++i)
+        values[i] = dist(rng) < ratio;
+
+    return {values, rows, 1};
+}
+
 matrix_t copy_matrix(const matrix_t& matrix) {
     auto* values = (double*)malloc(matrix.rows * matrix.cols * sizeof(double));
     memcpy(values, matrix.values, matrix.rows * matrix.cols * sizeof(double ));

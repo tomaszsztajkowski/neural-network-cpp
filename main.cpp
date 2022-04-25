@@ -1,12 +1,6 @@
 #include "neural.h"
 
-void zad1();
-
-void zad2();
-
-void zad3();
-
-void zad4();
+void zad1zad2();
 
 char *read_numbers(std::string filename, int offset, const long bytes) {
     char *output = (char *) malloc(bytes);
@@ -17,7 +11,7 @@ char *read_numbers(std::string filename, int offset, const long bytes) {
     return output;
 }
 
-void show_number(const matrix_t images, const matrix_t labels,  size_t n) {
+void show_number(const matrix_t images, const matrix_t labels, size_t n) {
     for (int i = 0; i < 28; ++i) {
         for (int j = 0; j < 28; ++j) {
             if (images[images.cols * (i * 28 + j) + n] != 0)
@@ -33,131 +27,42 @@ void show_number(const matrix_t images, const matrix_t labels,  size_t n) {
     }
 }
 
-
-
 int main() {
-    zad3();
-
-    return 0;
-}
-
-void zad1() {
-    double ivalues[][3] = {{0.5, 0.75, 0.1},
-                           {0.1, 0.3,  0.7},
-                           {0.2, 0.1,  0.6},
-                           {0.8, 0.9,  0.2}};
-
-    double hiddenvalues[] = {0.1, 0.1, -0.3,
-                             0.1, 0.2, 0.0,
-                             0.0, 0.7, 0.1,
-                             0.2, 0.4, 0.0,
-                             -0.3, 0.5, 0.1};
-
-    layer_t hidden_layer = {{hiddenvalues, 5, 3},
-                            zeros(5, 1),
-                            RELU};
-
-    double outvalues[] = {0.7, 0.9, -0.4, 0.8, 0.1,
-                          0.8, 0.5, 0.3, 0.1, 0.0,
-                          -0.3, 0.9, 0.3, 0.1, -0.2};
-
-    layer_t out_layer = {{outvalues, 3, 5},
-                         zeros(3, 1),
-                         PASS};
-
-    std::vector<layer_t> layers = {hidden_layer, out_layer};
-    network_t network = {layers, 0.01};
-
-    for (int i = 0; i < 4; ++i) {
-        matrix_t result = predict(network, {ivalues[i], 3, 1});
-        printmatrix(result);
-        std::cout << '\n';
-        free(result.values);
-    }
-}
-
-void zad2() {
-    double ivalues[][3] = {{0.5, 0.75, 0.1},
-                           {0.1, 0.3,  0.7},
-                           {0.2, 0.1,  0.6},
-                           {0.8, 0.9,  0.2}};
-
-    double hiddenvalues[] = {0.1, 0.1, -0.3,
-                             0.1, 0.2, 0.0,
-                             0.0, 0.7, 0.1,
-                             0.2, 0.4, 0.0,
-                             -0.3, 0.5, 0.1};
-
-    layer_t hidden_layer = {{hiddenvalues, 5, 3},
-                            zeros(5, 1),
-                            RELU};
-
-    double outvalues[] = {0.7, 0.9, -0.4, 0.8, 0.1,
-                          0.8, 0.5, 0.3, 0.1, 0.0,
-                          -0.3, 0.9, 0.3, 0.1, -0.2};
-
-    layer_t out_layer = {{outvalues, 3, 5},
-                         zeros(3, 1),
-                         PASS};
-
-    double expectedvalues[][3] = {{0.1, 1.0, 0.1},
-                                  {0.5, 0.2, -0.5},
-                                  {0.1, 0.3, 0.2},
-                                  {0.7, 0.6, 0.2}};
-
-    std::vector<layer_t> layers = {hidden_layer, out_layer};
-    network_t network = {layers, 0.01};
-
-    for (int j = 0; j < 51; ++j) {
-        for (int i = 0; i < 4; ++i) {
-            if (j == 0 || j == 49) {
-                matrix_t result = predict(network, {ivalues[i], 3, 1});
-                printmatrix(result);
-                std::cout << '\n';
-                free(result.values);
-
-            }
-            fit(network, {ivalues[i], 3, 1}, {expectedvalues[i], 3, 1});
-        }
-    }
-    free(out_layer.bias.values);
-    free(hidden_layer.bias.values);
-}
-
-void zad3() {
-    network_t network{{}, 0.01};
-//    network = load_layers("network_numbers.bin");
-    add_layer(network, 40, 784, -0.1, 0.1, RELU);
-    add_layer(network, 10, 40, -0.1, 0.1);
-
-//    matrix_t hidden_copy = copy_matrix(network.layers[0].weights);
-
-    const long train_count = 60 * 1000;
-    const long test_count = 10 * 1000;
+    const long count_train = 1 * 1000;
+    const long count_test = 10 * 1000;
     const long image_size = 28 * 28;
-    size_t epochs = 5;
+    const long epochs = 350;
+    const long batch_size = 100;
+    const double learning_rate = 0.2;
 
-    char *labels = read_numbers("train-labels.idx1-ubyte", 8, train_count);
-    char *images = read_numbers("train-images.idx3-ubyte", 16, train_count * image_size);
+    char *labels = read_numbers("train-labels.idx1-ubyte", 8, count_train);
+    char *images = read_numbers("train-images.idx3-ubyte", 16, count_train * image_size);
 
-    char *labels_test = read_numbers("t10k-labels.idx1-ubyte", 8, test_count);
-    char *images_test = read_numbers("t10k-images.idx3-ubyte", 16, test_count * image_size);
+    char *labels_test = read_numbers("t10k-labels.idx1-ubyte", 8, count_test);
+    char *images_test = read_numbers("t10k-images.idx3-ubyte", 16, count_test * image_size);
+
+    network_t network{{}, learning_rate};
+    add_layer(network, 40, image_size, -0.01, 0.01, TANH);
+    add_layer(network, 10, 40, -0.1, 0.1, SOFTMAX);
 
     for (int e = 0; e < epochs; ++e) {
-        for (int i = 0; i < train_count; ++i) {
-            double values[image_size];
-            for (int j = 0; j < image_size; ++j)
-                values[j] = (double) (uint8_t) images[i * image_size + j] / 255;
-            double lvalues[10] = {0};
-            lvalues[labels[i]] = 1;
-            matrix_t input = {values, image_size, 1};
-            matrix_t label = {lvalues, 10, 1};
+        for (int b = 0; b < count_train / batch_size; ++b) {
+            matrix_t input = {(double *) malloc(batch_size * image_size * sizeof(double)), image_size, batch_size};
+            matrix_t expected = {(double *) calloc(10 * batch_size, sizeof(double)), 10, batch_size};
+            for (int i = 0; i < batch_size; ++i)
+                expected[labels[b * batch_size + i] * batch_size + i] = 1;
+            for (int j = 0; j < batch_size; ++j) {
+                for (int i = 0; i < image_size; ++i)
+                    input[j + i * batch_size] = (uint8_t) images[b * batch_size * image_size + j * image_size + i] / 255.0;
+            }
 
-            fit_dropout(network, input, label);
+            fit_dropout(network, input, expected);
+            free(input.values);
+            free(expected.values);
         }
-        std::cout << e << '\n';
+
         int correct = 0;
-        for (int i = 0; i < test_count; ++i) {
+        for (int i = 0; i < count_test; ++i) {
             double values[image_size];
             for (int j = 0; j < image_size; ++j)
                 values[j] = (double) (uint8_t) images_test[i * image_size + j] / 255;
@@ -175,81 +80,79 @@ void zad3() {
             if (pred == labels_test[i])
                 correct++;
         }
-
-//        printmatrix({network.layers[0].weights.values, 40, 2});
-//        std::cout << '\n';
-//        printmatrix({hidden_copy.values, 40, 2});
-
-        std::cout << correct << '/' << test_count << '\n';
-        std::cout << (double) correct / (double) test_count << '\n';
+        std::cout << e << ' ' << (double) correct / (double) count_test << '\n';
         save_layers(network, "network_numbers.bin");
     }
 
-
-
-    free(images);
-    free(labels);
-    free(images_test);
-    free(labels_test);
     destroy_network(network);
+    free(images);
+    free(images_test);
+    free(labels);
+    free(labels_test);
+
+    return 0;
 }
 
-void zad4() {
-    network_t network{{}, 0.01};
-    add_layer(network, 6, 3, 0, 1, RELU);
-    add_layer(network, 4, 6, 0, 1);
+void zad1zad2() {
+    const long count_train = 1 * 1000;
+    const long count_test = 10 * 1000;
+    const long image_size = 28 * 28;
+    const long epochs = 350;
+    const long batch_size = 1;
+    const double learning_rate = 0.005;
 
-    double train_input[109 * 3];
-    int train_expected[109];
+    char *labels = read_numbers("train-labels.idx1-ubyte", 8, count_train);
+    char *images = read_numbers("train-images.idx3-ubyte", 16, count_train * image_size);
 
-    double test_input[130 * 3];
-    int test_expected[130];
+    char *labels_test = read_numbers("t10k-labels.idx1-ubyte", 8, count_test);
+    char *images_test = read_numbers("t10k-images.idx3-ubyte", 16, count_test * image_size);
 
-    std::fstream train_file("train-colors.txt", std::ios::in);
-    for (int i = 0; i < 109; ++i)
-        train_file >> train_input[i * 3] >> train_input[i * 3 + 1] >> train_input[i * 3 + 2] >> train_expected[i];
-    train_file.close();
+    network_t network{{}, learning_rate};
+    add_layer(network, 40, image_size, -0.1, 0.1, RELU);
+    add_layer(network, 10, 40, -0.1, 0.1);
 
-    std::fstream test_file("test-colors.txt", std::ios::in);
-    for (int i = 0; i < 130; ++i)
-        test_file >> test_input[i * 3] >> test_input[i * 3 + 1] >> test_input[i * 3 + 2] >> test_expected[i];
-    test_file.close();
+    for (int e = 0; e < epochs; ++e) {
+        for (int b = 0; b < count_train / batch_size; ++b) {
+            matrix_t input = {(double *) malloc(batch_size * image_size * sizeof(double)), image_size, batch_size};
+            matrix_t expected = {(double *) calloc(10 * batch_size, sizeof(double)), 10, batch_size};
+            for (int i = 0; i < batch_size; ++i)
+                expected[labels[b * batch_size + i] * batch_size + i] = 1;
+            for (int j = 0; j < batch_size; ++j) {
+                for (int i = 0; i < image_size; ++i)
+                    input[j + i * batch_size] = (uint8_t) images[b * batch_size * image_size + j * image_size + i] / 255.0;
+            }
 
-    for (int e = 0; e < 30; ++e) {
-        for (int i = 0; i < 109; ++i) {
-            double values[3] = {train_input[i * 3], train_input[i * 3 + 1], train_input[i * 3 + 2]};
-            matrix_t input = {values, 3, 1};
-            double evalues[4] = {0};
-            evalues[train_expected[i] - 1] = 1;
-            matrix_t expected = {evalues, 4, 1};
-
-            fit(network, input, expected);
+            fit_dropout(network, input, expected);
+            free(input.values);
+            free(expected.values);
         }
 
         int correct = 0;
-        for (int i = 0; i < 130; ++i) {
-            double values[3] = {test_input[i * 3], test_input[i * 3 + 1], test_input[i * 3 + 2]};
-            matrix_t input = {values, 3, 1};
+        for (int i = 0; i < count_test; ++i) {
+            double values[image_size];
+            for (int j = 0; j < image_size; ++j)
+                values[j] = (double) (uint8_t) images_test[i * image_size + j] / 255;
+            matrix_t input = {values, image_size, 1};
             matrix_t prediction = predict(network, input);
 
             int pred = 0;
             double max = prediction[0];
-            for (int j = 1; j < 4; ++j) {
-                if(prediction[j] > max) {
+            for (int j = 1; j < 10; ++j) {
+                if (prediction[j] > max) {
                     max = prediction[j];
                     pred = j;
                 }
             }
-
-            if (pred == test_expected[i] - 1)
+            if (pred == labels_test[i])
                 correct++;
-
-            free(prediction.values);
         }
-        std::cout << e << '\n';
-        std::cout << correct << "/130\n";
-        std::cout << correct / 130.0 << '\n';
+        std::cout << e << ' ' << (double) correct / (double) count_test << '\n';
+        save_layers(network, "network_numbers.bin");
     }
 
     destroy_network(network);
+    free(images);
+    free(images_test);
+    free(labels);
+    free(labels_test);
 }

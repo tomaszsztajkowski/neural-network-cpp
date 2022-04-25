@@ -50,6 +50,7 @@ matrix_t zeros(size_t rows, size_t cols);
 matrix_t ones(size_t rows, size_t cols);
 matrix_t random(size_t rows, size_t cols, double low, double high);
 matrix_t random_ones(size_t rows, double ratio);
+matrix_t random_ones_appr(size_t rows, double ratio);
 matrix_t copy_matrix(const matrix_t& matrix);
 
 void pass(matrix_t& matrix);
