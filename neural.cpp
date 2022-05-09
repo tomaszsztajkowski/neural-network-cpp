@@ -1,11 +1,11 @@
 #include "neural.h"
 
-void (*activation_functions[])(matrix_t &) = {pass, relu, sigmoid, tanh, sigmoid};
+void (*activation_functions[])(matrix_t &) = {pass, relu, sigmoid, tanh, softmax};
 
 void (*activation_derivatives[])(matrix_t &) = {pass, reluderiv, sigmoidderiv, tanhderiv, pass};
 
 void destroy_network(network_t &network) {
-    for (layer_t layer: network.layers) {
+    for (layer_dense layer: network.layers) {
         free(layer.weights.values);
         free(layer.bias.values);
     }
@@ -30,15 +30,15 @@ matrix_t predict(network_t &network, const matrix_t &input) {
 
 void add_layer(network_t &network, size_t rows, size_t cols, double min, double max, enum Activation activation) {
     cols = cols ? cols : network.layers.back().weights.rows;
-    layer_t layer = {random(rows, cols, min, max),
-                     zeros(rows, 1),
-                     activation};
+    layer_dense layer = {random(rows, cols, min, max),
+                         zeros(rows, 1),
+                         activation};
     network.layers.push_back(layer);
 }
 
 
 network_t load_layers(const std::string &filename) {
-    std::vector<layer_t> layers = {};
+    std::vector<layer_dense> layers = {};
     std::fstream file(filename, std::ios::in | std::ios::binary);
     int size;
     double learning_rate;
@@ -51,7 +51,7 @@ network_t load_layers(const std::string &filename) {
         file.read((char *) &layers[i].weights.cols, sizeof(int));
         layers[i].bias.rows = layers[i].weights.rows;
         layers[i].bias.cols = 1;
-        layer_t layer = layers[i];
+        layer_dense layer = layers[i];
         layers[i].weights.values = (double *) malloc(layer.weights.rows * layer.weights.cols * sizeof(double));
         layers[i].bias.values = (double *) malloc(layer.bias.rows * sizeof(double));
         file.read((char *) layers[i].weights.values, layer.weights.rows * layer.weights.cols * sizeof(double));
